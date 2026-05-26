@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -6,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Co.opmart - Hệ Thống Quét Mã Vạch</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <!-- Thay thế QuaggaJS bằng Html5-QRCode để hỗ trợ quét QR Code, Mã 13 và Mã nhà cung cấp -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -27,10 +27,11 @@
             border: 3px solid #1e293b;
         }
 
-        #interactive.viewport > canvas, #interactive.viewport > video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* Đảm bảo camera của html5-qrcode lấp đầy khung hình */
+        #interactive video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
         }
 
         .scanner-laser {
@@ -88,7 +89,7 @@
                 </h2>
                 <div id="interactive" class="viewport shadow-inner">
                     <div id="laser" class="scanner-laser"></div>
-                    <div class="absolute inset-0 border-[35px] border-black/40 pointer-events-none rounded-[1.1rem]"></div>
+                    <div class="absolute inset-0 border-[35px] border-black/40 pointer-events-none rounded-[1.1rem] z-20"></div>
                 </div>
                 <div class="flex gap-3 mt-4">
                     <button id="toggleCamera" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-md shadow-blue-100">
@@ -113,6 +114,7 @@
             </div>
         </section>
 
+        <!-- BLOCK PHẢI: HIỂN THỊ THÔNG TIN -->
         <section class="w-full lg:w-7/12 flex flex-col">
             <div id="statusBox" class="bg-white border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-16 text-center space-y-4 flex-1">
                 <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
@@ -152,6 +154,7 @@
                     </div>
                 </div>
 
+                <!-- KHUNG 2 -->
                 <div id="boxFrame2" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3"><i class="fa-solid fa-link mr-1"></i> Khung 2: Mã liên kết sản phẩm</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -166,6 +169,7 @@
                     </div>
                 </div>
 
+                <!-- KHUNG 3 -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <p class="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Khung 3: Cảnh báo nghiệp vụ</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="boxFrame3Grid">
@@ -174,6 +178,7 @@
                     </div>
                 </div>
 
+                <!-- THANH ĐẾ -->
                 <div class="bg-slate-900 p-4 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-base"><i class="fa-solid fa-map-pin"></i></div>
@@ -191,7 +196,7 @@
     </main>
 
     <footer class="bg-white border-t border-slate-200 py-3 text-center text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-auto">
-        Co.opmart Barcode Analyzer Tool v4.4 - Hệ thống tính toán chéo nâng cao
+        Co.opmart Barcode Analyzer Tool v4.5 - Hệ thống tính toán chéo nâng cao
     </footer>
 
     <script>
@@ -204,7 +209,9 @@
         const resultArea = document.getElementById('resultArea');
         const laser = document.getElementById('laser');
         const resetViewBtn = document.getElementById('resetView');
+        
         let isScanning = false;
+        let html5QrCode = null; // Quản lý vòng đời camera thông qua Html5Qrcode thay cho Quagga
 
         async function fetchProduct(barcode) {
             if (!barcode) return;
@@ -233,83 +240,186 @@
                     const m7LeVal = (data.m7Le && data.m7Le !== "--") ? data.m7Le.trim() : "";
                     const mLoc7Val = (data.mLoc7 && data.mLoc7 !== "--") ? data.mLoc7.trim() : "";
                     const mThung13Val = (data.mThung13 && data.mThung13 !== "--") ? data.mThung13.trim() : "";
+                    const mLoc13Val = (data.mLoc13 && data.mLoc13 !== "--") ? data.mLoc13.trim() : "";
                     const mThung7Val = (data.mThung7 && data.mThung7 !== "--") ? data.mThung7.trim() : "";
+
+                    // Lấy mã lẻ 7 ưu tiên (nếu trống thì mới hiển thị hoặc lấy mã lẻ 13 để dự phòng)
                     const primaryLe7Barcode = m7LeVal || m13LeVal || "X";
 
+                    // Tham chiếu các khối hiển thị ở Khung 2
                     const containerMThung7 = document.getElementById('containerMThung7');
                     const containerMLoc7 = document.getElementById('containerMLoc7');
                     const resMThung7 = document.getElementById('resMThung7');
                     const resMLoc7 = document.getElementById('resMLoc7');
                     const boxFrame2 = document.getElementById('boxFrame2');
-                    const boxThung = document.getElementById('boxThungWarning');
-                    const boxLoc = document.getElementById('boxLocWarning');
 
-                    // Reset visibility mặc định
+                    // Mặc định hiện tất cả container ở Khung 2 và 3
                     containerMThung7.classList.remove('hidden');
                     containerMLoc7.classList.remove('hidden');
                     boxFrame2.classList.remove('hidden');
+
+                    // Tham chiếu Khung 3
+                    const boxThung = document.getElementById('boxThungWarning');
+                    const boxLoc = document.getElementById('boxLocWarning');
+                    
                     boxThung.classList.remove('hidden', 'md:col-span-2');
                     boxLoc.classList.remove('hidden', 'md:col-span-2');
 
-                    // TRƯỜNG HỢP: NHẬP MÃ LẺ 13 HOẶC MÃ LẺ 7
+                    // ==========================================
+                    // TRƯỜNG HỢP 1: Nhập Mã Lẻ 13 hoặc Mã Lẻ 7
+                    // ==========================================
                     if (txtScanned === m13LeVal || txtScanned === m7LeVal) {
+                        
+                        // Ô bên trái Khung 2 không có dữ liệu nên hoàn toàn ẩn đi (theo yêu cầu)
                         containerMThung7.classList.add('hidden');
-                        if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                        if (mLoc7Val === "") boxFrame2.classList.add('hidden');
+                        
+                        // Ô bên phải Khung 2: hiển thị mã lốc 7 nếu có dữ liệu
+                        if (mLoc7Val !== "") {
+                            resMLoc7.textContent = mLoc7Val;
+                        } else {
+                            containerMLoc7.classList.add('hidden');
+                        }
+                        
+                        // Nếu cả ô lốc 7 cũng không có dữ liệu để hiển thị thì ẩn toàn bộ Khung 2
+                        if (mLoc7Val === "") {
+                            boxFrame2.classList.add('hidden');
+                        }
 
+                        // --- KHUNG 3: Cảnh báo & Tính toán ---
+                        // Ô bên trái Khung 3 không có dữ liệu tính toán nên ẩn đi hoàn toàn
                         boxThung.classList.add('hidden');
+
+                        // Ô bên phải Khung 3 chiếm trọn toàn bộ chiều rộng (md:col-span-2) để hiển thị cân đối
                         boxLoc.classList.add('md:col-span-2');
 
+                        // Nếu không có mã lốc 7 thì cách tính sẽ lấy mã lẻ 7 nhân với quy cách
                         if (mLoc7Val === "") {
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full md:col-span-2";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-4xl md:text-5xl text-amber-500 animate-pulse"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Tính toán mã lốc</span><span class="text-3xl md:text-5xl font-black uppercase block mt-1">Lẻ 7 (${primaryLe7Barcode}) x ${specValue}</span></div>`;
+                            boxLoc.className = "p-4 rounded-xl flex items-center gap-4 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full md:col-span-2";
+                            boxLoc.innerHTML = `
+                                <i class="fa-solid fa-calculator text-3xl md:text-4xl text-amber-500 animate-pulse"></i>
+                                <div>
+                                    <span class="text-[10px] opacity-75 uppercase block mb-1">Tính toán mã lốc</span>
+                                    <span class="text-2xl md:text-3xl font-black uppercase block mt-1">Lấy lẻ 7 (${primaryLe7Barcode}) x ${specValue}</span>
+                                </div>
+                            `;
                         } else {
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Trạng thái</span><span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">Mã lốc 7 Hợp lệ</span></div>`;
+                            boxLoc.className = "p-4 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
+                            boxLoc.innerHTML = `
+                                <i class="fa-solid fa-circle-check text-3xl md:text-4xl text-emerald-500"></i>
+                                <div>
+                                    <span class="text-[10px] opacity-75 uppercase block mb-1">Trạng thái</span>
+                                    <span class="text-2xl md:text-3xl font-black uppercase text-emerald-800 block mt-1">Mã lốc 7 Hợp lệ</span>
+                                </div>
+                            `;
                         }
                     } 
-                    // TRƯỜNG HỢP: NHẬP MÃ THÙNG 13 (LOGIC YÊU CẦU MỚI)
+                    // ==========================================
+                    // TRƯỜNG HỢP 2: Nhập Mã Thùng 13 (Giữ nguyên logic cũ)
+                    // ==========================================
                     else if (txtScanned === mThung13Val) {
-                        if (mThung7Val !== "") {
-                            // Nếu CÓ Mã Thùng 7: Hiện Thùng 7, Lốc 7 ở Khung 2. Khung 3 báo Thùng 7 Hợp lệ.
-                            resMThung7.textContent = mThung7Val;
-                            if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                            
-                            boxThung.className = "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
-                            boxThung.innerHTML = `<i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Trạng thái</span><span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">Mã thùng 7 Hợp lệ</span></div>`;
-                            boxLoc.classList.add('hidden');
-                        } else {
-                            // Nếu KHÔNG CÓ Mã Thùng 7 (Yêu cầu chính): 
-                            // Khung 2: Hiện Lốc 7 ở ô bên phải, ẩn ô bên trái.
-                            containerMThung7.classList.add('hidden');
-                            if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                            
-                            // Khung 3: Hiện Lốc 7 x Quy cách ở ô bên phải, ẩn ô bên trái.
-                            boxThung.classList.add('hidden');
-                            boxLoc.classList.add('md:col-span-2');
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-blue-200 bg-blue-50 text-blue-700 font-bold w-full md:col-span-2";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-4xl md:text-5xl text-blue-500 animate-pulse"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Tính toán mã thùng (Lốc x Quy cách)</span><span class="text-3xl md:text-5xl font-black uppercase block mt-1">${mLoc7Val || 'X'} x ${specValue}</span></div>`;
-                        }
-                    }
-                    // TRƯỜNG HỢP KHÁC
-                    else {
-                        if (mThung7Val !== "") resMThung7.textContent = mThung7Val; else containerMThung7.classList.add('hidden');
-                        if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
                         
-                        if (!mThung7Val) {
-                            boxThung.className = "p-6 rounded-xl flex items-center gap-4 border-red-200 bg-red-50 text-red-700 font-bold w-full";
-                            boxThung.innerHTML = `<i class="fa-solid fa-calculator text-3xl text-red-500 animate-pulse"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Thùng 7</span><span class="text-2xl font-black block">${primaryLe7Barcode}x${specValue}</span></div>`;
+                        // Khung 2: Hiện mã thùng 7 (ô trái), ô phải (Mã lốc 7) nếu không có dữ liệu thì không hiển thị
+                        if (mThung7Val !== "") {
+                            resMThung7.textContent = mThung7Val;
                         } else {
-                            boxThung.className = "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
-                            boxThung.innerHTML = `<i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Thùng 7</span><span class="text-2xl font-black block">HỢP LỆ</span></div>`;
+                            containerMThung7.classList.add('hidden');
+                        }
+
+                        if (mLoc7Val !== "") {
+                            resMLoc7.textContent = mLoc7Val;
+                        } else {
+                            containerMLoc7.classList.add('hidden');
+                        }
+
+                        // Nếu cả 2 đều không có dữ liệu -> Ẩn toàn bộ Khung 2
+                        if (mThung7Val === "" && mLoc7Val === "") {
+                            boxFrame2.classList.add('hidden');
+                        }
+
+                        // KHUNG 3: Cảnh báo & Tính toán
+                        if (mThung7Val === "") {
+                            boxThung.className = "p-4 rounded-xl flex items-center gap-4 border-red-200 bg-red-50 text-red-700 font-bold w-full md:col-span-2";
+                            boxThung.innerHTML = `
+                                <i class="fa-solid fa-calculator text-3xl md:text-4xl text-red-500 animate-pulse"></i>
+                                <div>
+                                    <span class="text-[10px] opacity-75 uppercase block mb-1">Tính toán mã thùng</span>
+                                    <span class="text-2xl md:text-3xl font-black uppercase block mt-1">Lấy lẻ ${primaryLe7Barcode} x ${specValue}</span>
+                                </div>
+                            `;
+                        } else {
+                            boxThung.className = "p-4 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
+                            boxThung.innerHTML = `
+                                <i class="fa-solid fa-circle-check text-3xl md:text-4xl text-emerald-500"></i>
+                                <div>
+                                    <span class="text-[10px] opacity-75 uppercase block mb-1">Trạng thái</span>
+                                    <span class="text-2xl md:text-3xl font-black uppercase text-emerald-800 block mt-1">Mã thùng 7 Hợp lệ</span>
+                                </div>
+                            `;
+                        }
+
+                        // Ô bên phải Khung 3 tính mã lốc sẽ KHÔNG HIỂN THỊ
+                        boxLoc.classList.add('hidden');
+                    }
+                    // ==========================================
+                    // TRƯỜNG HỢP 3: Các mã khác (Mã Lốc 13, Mã Lốc 7, Mã Thùng 7)
+                    // ==========================================
+                    else {
+                        // Hiển thị Khung 2 tùy thuộc vào dữ liệu trống
+                        if (mThung7Val !== "") {
+                            resMThung7.textContent = mThung7Val;
+                        } else {
+                            containerMThung7.classList.add('hidden');
+                        }
+
+                        if (mLoc7Val !== "") {
+                            resMLoc7.textContent = mLoc7Val;
+                        } else {
+                            containerMLoc7.classList.add('hidden');
+                        }
+
+                        if (mThung7Val === "" && mLoc7Val === "") {
+                            boxFrame2.classList.add('hidden');
+                        }
+
+                        // Cấu hình lại Khung 3 mặc định dựa trên dữ liệu hiện có
+                        if (!mThung7Val) {
+                            boxThung.className = "p-4 rounded-xl flex items-center gap-4 border-red-200 bg-red-50 text-red-700 font-bold w-full";
+                            boxThung.innerHTML = `
+                                <i class="fa-solid fa-calculator text-3xl md:text-4xl text-red-500 animate-pulse"></i>
+                                <div>
+                                    <span class="text-[10px] opacity-75 uppercase block mb-1">Tính toán mã thùng</span>
+                                    <span class="text-2xl md:text-3xl font-black uppercase block mt-1">Lấy lẻ ${primaryLe7Barcode} x ${specValue}</span>
+                                </div>
+                            `;
+                        } else {
+                            boxThung.className = "p-4 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
+                            boxThung.innerHTML = `
+                                <i class="fa-solid fa-circle-check text-3xl md:text-4xl text-emerald-500"></i>
+                                <div>
+                                    <span class="text-[10px] opacity-75 uppercase block mb-1">Trạng thái</span>
+                                    <span class="text-2xl md:text-3xl font-black uppercase text-emerald-800 block mt-1">Mã thùng 7 Hợp lệ</span>
+                                </div>
+                            `;
                         }
 
                         if (!mLoc7Val) {
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-4 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-3xl text-amber-500 animate-pulse"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Lốc 7</span><span class="text-2xl font-black block">${primaryLe7Barcode}x${specValue}</span></div>`;
+                            boxLoc.className = "p-4 rounded-xl flex items-center gap-4 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full";
+                            boxLoc.innerHTML = `
+                                <i class="fa-solid fa-calculator text-3xl md:text-4xl text-amber-500 animate-pulse"></i>
+                                <div>
+                                    <span class="text-[10px] opacity-75 uppercase block mb-1">Tính toán mã lốc</span>
+                                    <span class="text-2xl md:text-3xl font-black uppercase block mt-1">Lấy lẻ ${primaryLe7Barcode} x ${specValue}</span>
+                                </div>
+                            `;
                         } else {
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Lốc 7</span><span class="text-2xl font-black block">HỢP LỆ</span></div>`;
+                            boxLoc.className = "p-4 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
+                            boxLoc.innerHTML = `
+                                <i class="fa-solid fa-circle-check text-3xl md:text-4xl text-emerald-500"></i>
+                                <div>
+                                    <span class="text-[10px] opacity-75 uppercase block mb-1">Trạng thái</span>
+                                    <span class="text-2xl md:text-3xl font-black uppercase text-emerald-800 block mt-1">Mã lốc 7 Hợp lệ</span>
+                                </div>
+                            `;
                         }
                     }
 
@@ -325,24 +435,71 @@
             }
         }
 
+        // Tích hợp và khởi tạo Html5Qrcode để quét đa năng
         function startScanning() {
-            Quagga.init({
-                inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive'), constraints: { facingMode: "environment" }, },
-                decoder: { readers: ["ean_reader", "code_128_reader", "upc_reader", "ean_8_reader", "code_39_reader"] }, locate: true
-            }, function(err) {
-                if (err) return;
-                Quagga.start(); isScanning = true;
-                toggleBtn.classList.add('hidden'); stopBtn.classList.remove('hidden'); laser.style.display = 'block';
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("interactive");
+            }
+
+            // Cấu hình các loại mã cần hỗ trợ, bao gồm QR Code, mã 13 và mã code nhà cung cấp
+            const config = {
+                fps: 15,
+                // Cho phép quét mọi kích cỡ mã mà không giới hạn vùng qrbox quá chặt chẽ
+                formatsToSupport: [
+                    Html5QrcodeSupportedFormats.QR_CODE,
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.CODE_39,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E,
+                    Html5QrcodeSupportedFormats.ITF
+                ]
+            };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText) => {
+                    if (navigator.vibrate) navigator.vibrate(100);
+                    fetchProduct(decodedText);
+                },
+                (errorMessage) => {
+                    // Chạy ngầm bỏ qua các khung lỗi phân giải nhầm
+                }
+            ).then(() => {
+                isScanning = true;
+                toggleBtn.classList.add('hidden');
+                stopBtn.classList.remove('hidden');
+                laser.style.display = 'block';
+            }).catch((err) => {
+                statusBox.innerHTML = `
+                    <div class="p-8 text-rose-500 font-bold italic text-center">
+                        <i class="fa-solid fa-video-slash text-2xl mb-2"></i>
+                        <p>Lỗi khởi động Camera: ${err}</p>
+                    </div>`;
             });
         }
 
-        function stopScanning() { Quagga.stop(); isScanning = false; toggleBtn.classList.remove('hidden'); stopBtn.classList.add('hidden'); laser.style.display = 'none'; }
-        Quagga.onDetected(function(result) { fetchProduct(result.codeResult.code); });
+        function stopScanning() {
+            if (html5QrCode && isScanning) {
+                html5QrCode.stop().then(() => {
+                    isScanning = false;
+                    toggleBtn.classList.remove('hidden');
+                    stopBtn.classList.add('hidden');
+                    laser.style.display = 'none';
+                }).catch((err) => {
+                    console.error("Không thể dừng camera:", err);
+                });
+            }
+        }
 
         function clearAndFocus() {
-            resultArea.classList.add('hidden'); statusBox.classList.remove('hidden');
+            resultArea.classList.add('hidden'); 
+            statusBox.classList.remove('hidden');
             statusBox.innerHTML = `<div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"><i class="fa-solid fa-hourglass-start text-2xl"></i></div><div><h3 class="text-lg font-bold text-slate-600">Đang chờ tín hiệu...</h3><p class="text-slate-400 text-sm max-w-sm">Hãy bật camera hoặc sử dụng súng quét cầm tay.</p></div>`;
-            manualInput.value = ''; manualInput.focus();
+            manualInput.value = ''; 
+            manualInput.focus();
         }
 
         toggleBtn.addEventListener('click', startScanning);
