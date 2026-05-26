@@ -205,8 +205,26 @@
         const resetViewBtn = document.getElementById('resetView');
         let isScanning = false;
 
+        // BỔ SUNG: Tính năng phát âm thanh báo hiệu
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 800;
+            gain.gain.value = 0.1;
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
         async function fetchProduct(barcode) {
             if (!barcode) return;
+            
+            // BỔ SUNG: Hiệu ứng nhận diện
+            laser.style.background = '#22c55e'; // Chuyển sang màu xanh khi nhận diện
+            playBeep(); // Phát tiếng bíp
+            
             statusBox.innerHTML = `<div class="flex flex-col items-center gap-4 py-10"><div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div><p class="text-blue-600 font-bold text-xs uppercase">Đang đối chiếu dữ liệu: ${barcode}</p></div>`;
             statusBox.classList.remove('hidden');
             resultArea.classList.add('hidden');
@@ -216,6 +234,7 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    // (Giữ nguyên logic xử lý dữ liệu của bạn ở đây...)
                     document.getElementById('resName').textContent = data.name || "Không tìm thấy tên";
                     document.getElementById('resSpec').textContent = data.spec || "1";
                     document.getElementById('resUnit').textContent = data.unit || "--";
@@ -243,22 +262,18 @@
                     const boxThung = document.getElementById('boxThungWarning');
                     const boxLoc = document.getElementById('boxLocWarning');
 
-                    // Reset visibility mặc định
                     containerMThung7.classList.remove('hidden');
                     containerMLoc7.classList.remove('hidden');
                     boxFrame2.classList.remove('hidden');
                     boxThung.classList.remove('hidden', 'md:col-span-2');
                     boxLoc.classList.remove('hidden', 'md:col-span-2');
 
-                    // TRƯỜNG HỢP: NHẬP MÃ LẺ 13 HOẶC MÃ LẺ 7
                     if (txtScanned === m13LeVal || txtScanned === m7LeVal) {
                         containerMThung7.classList.add('hidden');
                         if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
                         if (mLoc7Val === "") boxFrame2.classList.add('hidden');
-
                         boxThung.classList.add('hidden');
                         boxLoc.classList.add('md:col-span-2');
-
                         if (mLoc7Val === "") {
                             boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full md:col-span-2";
                             boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-4xl md:text-5xl text-amber-500 animate-pulse"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Tính toán mã lốc</span><span class="text-3xl md:text-5xl font-black uppercase block mt-1">Lẻ 7 (${primaryLe7Barcode}) x ${specValue}</span></div>`;
@@ -266,35 +281,24 @@
                             boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
                             boxLoc.innerHTML = `<i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Trạng thái</span><span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">Mã lốc 7 Hợp lệ</span></div>`;
                         }
-                    } 
-                    // TRƯỜNG HỢP: NHẬP MÃ THÙNG 13 (LOGIC YÊU CẦU MỚI)
-                    else if (txtScanned === mThung13Val) {
+                    } else if (txtScanned === mThung13Val) {
                         if (mThung7Val !== "") {
-                            // Nếu CÓ Mã Thùng 7: Hiện Thùng 7, Lốc 7 ở Khung 2. Khung 3 báo Thùng 7 Hợp lệ.
                             resMThung7.textContent = mThung7Val;
                             if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                            
                             boxThung.className = "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
                             boxThung.innerHTML = `<i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Trạng thái</span><span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">Mã thùng 7 Hợp lệ</span></div>`;
                             boxLoc.classList.add('hidden');
                         } else {
-                            // Nếu KHÔNG CÓ Mã Thùng 7 (Yêu cầu chính): 
-                            // Khung 2: Hiện Lốc 7 ở ô bên phải, ẩn ô bên trái.
                             containerMThung7.classList.add('hidden');
                             if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                            
-                            // Khung 3: Hiện Lốc 7 x Quy cách ở ô bên phải, ẩn ô bên trái.
                             boxThung.classList.add('hidden');
                             boxLoc.classList.add('md:col-span-2');
                             boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-blue-200 bg-blue-50 text-blue-700 font-bold w-full md:col-span-2";
                             boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-4xl md:text-5xl text-blue-500 animate-pulse"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Tính toán mã thùng (Lốc x Quy cách)</span><span class="text-3xl md:text-5xl font-black uppercase block mt-1">${mLoc7Val || 'X'} x ${specValue}</span></div>`;
                         }
-                    }
-                    // TRƯỜNG HỢP KHÁC
-                    else {
+                    } else {
                         if (mThung7Val !== "") resMThung7.textContent = mThung7Val; else containerMThung7.classList.add('hidden');
                         if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                        
                         if (!mThung7Val) {
                             boxThung.className = "p-6 rounded-xl flex items-center gap-4 border-red-200 bg-red-50 text-red-700 font-bold w-full";
                             boxThung.innerHTML = `<i class="fa-solid fa-calculator text-3xl text-red-500 animate-pulse"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Thùng 7</span><span class="text-2xl font-black block">${primaryLe7Barcode}x${specValue}</span></div>`;
@@ -302,7 +306,6 @@
                             boxThung.className = "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
                             boxThung.innerHTML = `<i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Thùng 7</span><span class="text-2xl font-black block">HỢP LỆ</span></div>`;
                         }
-
                         if (!mLoc7Val) {
                             boxLoc.className = "p-6 rounded-xl flex items-center gap-4 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full";
                             boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-3xl text-amber-500 animate-pulse"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Lốc 7</span><span class="text-2xl font-black block">${primaryLe7Barcode}x${specValue}</span></div>`;
@@ -317,6 +320,7 @@
                     resultArea.classList.remove('hidden');
                     if (isScanning) stopScanning();
                 } else {
+                    laser.style.background = '#ef4444'; // Trả về màu đỏ nếu lỗi
                     statusBox.innerHTML = `<div class="flex flex-col items-center gap-4 py-10 text-rose-500"><i class="fa-solid fa-circle-xmark text-4xl"></i><div><h3 class="text-base font-bold">Không tìm thấy mã</h3><p class="text-xs opacity-75 mt-1">Hệ thống không tồn tại mã: ${barcode}</p></div><button onclick="clearAndFocus()" class="bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg text-slate-700 text-xs font-bold mt-2">Thử lại</button></div>`;
                 }
             } catch (err) {
@@ -332,6 +336,7 @@
                 if (err) return;
                 Quagga.start(); isScanning = true;
                 toggleBtn.classList.add('hidden'); stopBtn.classList.remove('hidden'); laser.style.display = 'block';
+                laser.style.background = '#ef4444'; // Reset màu laser về mặc định
             });
         }
 
