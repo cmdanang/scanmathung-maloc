@@ -1,17 +1,21 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Co.opmart - Hệ Thống Quét Mã Vạch</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
+        body {
+            font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
             color: #0f172a;
         }
@@ -26,7 +30,8 @@
             border: 3px solid #1e293b;
         }
 
-        #interactive.viewport > canvas, #interactive.viewport > video {
+        #interactive.viewport > canvas,
+        #interactive.viewport > video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -46,8 +51,15 @@
         }
 
         @keyframes scanMove {
-            0%, 100% { transform: translateY(-100px); opacity: 0.3; }
-            50% { transform: translateY(100px); opacity: 1; }
+            0%,100% {
+                transform: translateY(-100px);
+                opacity: 0.3;
+            }
+
+            50% {
+                transform: translateY(100px);
+                opacity: 1;
+            }
         }
 
         .product-img {
@@ -58,337 +70,870 @@
         }
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col">
 
-    <header class="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="flex items-center font-black text-3xl tracking-tighter select-none">
-                    <span class="text-blue-600">co</span><span class="text-red-500">.op</span><span class="text-blue-600">mart</span>
-                </div>
-                <div class="h-6 w-[2px] bg-slate-300 hidden sm:block"></div>
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest leading-none">Hệ thống phân phối & kiểm kho</p>
+<header class="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+
+        <div class="flex items-center gap-3">
+            <div class="flex items-center font-black text-3xl tracking-tighter select-none">
+                <span class="text-blue-600">co</span>
+                <span class="text-red-500">.op</span>
+                <span class="text-blue-600">mart</span>
             </div>
-            
-            <div id="connectionStatus" class="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-100">
-                <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span class="text-[10px] font-bold text-emerald-700 uppercase">Hệ thống sẵn sàng</span>
+
+            <div class="h-6 w-[2px] bg-slate-300 hidden sm:block"></div>
+
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest leading-none">
+                Hệ thống phân phối & kiểm kho
+            </p>
+        </div>
+
+        <div id="connectionStatus"
+            class="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-100">
+
+            <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+
+            <span class="text-[10px] font-bold text-emerald-700 uppercase">
+                Hệ thống sẵn sàng
+            </span>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full flex flex-col lg:flex-row gap-6">
+
+    <!-- LEFT -->
+    <section class="w-full lg:w-5/12 flex flex-col gap-4">
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+
+            <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-camera text-blue-600"></i>
+                Quét mã qua Camera điện thoại
+            </h2>
+
+            <div id="interactive" class="viewport shadow-inner">
+
+                <div id="laser" class="scanner-laser"></div>
+
+                <div class="absolute inset-0 border-[35px] border-black/40 pointer-events-none rounded-[1.1rem]"></div>
+            </div>
+
+            <div class="flex gap-3 mt-4">
+
+                <button id="toggleCamera"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-md shadow-blue-100">
+
+                    <i class="fa-solid fa-video"></i>
+                    Bật Camera
+                </button>
+
+                <button id="stopCamera"
+                    class="hidden flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
+
+                    <i class="fa-solid fa-video-slash"></i>
+                    Tắt Camera
+                </button>
             </div>
         </div>
-    </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full flex flex-col lg:flex-row gap-6">
-        
-        <!-- BLOCK TRÁI: THIẾT BỊ QUÉT -->
-        <section class="w-full lg:w-5/12 flex flex-col gap-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 group">
+
+            <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-barcode text-blue-600"></i>
+                Quét bằng máy cầm tay hoặc nhập tay
+            </h2>
+
+            <div class="relative">
+
+                <input type="text"
+                    id="manualInput"
+                    class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl py-4 pl-12 pr-4 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-800 font-bold"
+                    placeholder="Nhấp chuột vào đây trước khi quét..." />
+
+                <i class="fa-solid fa-keyboard absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="w-full lg:w-7/12 flex flex-col">
+
+        <div id="statusBox"
+            class="bg-white border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-16 text-center space-y-4 flex-1">
+
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+                <i class="fa-solid fa-hourglass-start text-2xl animate-spin" style="animation-duration:4s;"></i>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-bold text-slate-600">
+                    Đang chờ tín hiệu...
+                </h3>
+
+                <p class="text-slate-400 text-sm max-w-sm">
+                    Hãy bật camera hoặc sử dụng súng quét cầm tay để đối chiếu sản phẩm.
+                </p>
+            </div>
+        </div>
+
+        <div id="resultArea"
+            class="hidden flex-1 flex-col gap-4 animate-in fade-in slide-in-from-bottom-3 duration-300">
+
+            <!-- KHUNG 1 -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-camera text-blue-600"></i> Quét mã qua Camera điện thoại
-                </h2>
-                <div id="interactive" class="viewport shadow-inner">
-                    <div id="laser" class="scanner-laser"></div>
-                    <div class="absolute inset-0 border-[35px] border-black/40 pointer-events-none rounded-[1.1rem]"></div>
-                </div>
-                <div class="flex gap-3 mt-4">
-                    <button id="toggleCamera" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-md shadow-blue-100">
-                        <i class="fa-solid fa-video"></i> Bật Camera
-                    </button>
-                    <button id="stopCamera" class="hidden flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-video-slash"></i> Tắt Camera
-                    </button>
+
+                <p class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3">
+                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    Khung 1: Tổng quan sản phẩm
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+                    <div
+                        class="bg-slate-50 p-2 rounded-xl border border-slate-200 flex items-center justify-center min-h-[110px] md:h-28 overflow-hidden md:col-span-3">
+
+                        <img id="resImage" src="" alt="Sản phẩm" class="product-img hidden" />
+
+                        <div id="noImageFallback"
+                            class="text-slate-400 text-xs flex flex-col items-center gap-1 justify-center">
+
+                            <i class="fa-solid fa-image text-2xl"></i>
+
+                            <span>Không có ảnh</span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-center min-h-[110px] md:h-28 md:col-span-5">
+
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                            Tên sản phẩm
+                        </span>
+
+                        <p id="resName"
+                            class="text-sm font-800 text-slate-800 line-clamp-3 leading-snug">
+                            --
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-center min-h-[110px] md:h-28 md:col-span-2">
+
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                            Quy cách
+                        </span>
+
+                        <p id="resSpec" class="text-base font-800 text-slate-800 truncate">
+                            --
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-center min-h-[110px] md:h-28 md:col-span-2">
+
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                            Đơn vị tính
+                        </span>
+
+                        <p id="resUnit" class="text-base font-800 text-slate-800 truncate">
+                            --
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 group">
-                <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-barcode text-blue-600"></i> Quét bằng máy cầm tay hoặc nhập tay
-                </h2>
-                <div class="relative">
-                    <input type="text" id="manualInput" 
-                        class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl py-4 pl-12 pr-4 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-none transition-all text-slate-800 font-bold"
-                        placeholder="Nhấp chuột vào đây trước khi quét...">
-                    <i class="fa-solid fa-keyboard absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+            <!-- KHUNG 2 -->
+            <div id="boxFrame2"
+                class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+
+                <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3">
+                    <i class="fa-solid fa-link mr-1"></i>
+                    Khung 2: Mã liên kết sản phẩm
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <!-- MÃ THÙNG 7 -->
+                    <div id="containerMThung7"
+                        class="bg-indigo-50/50 border border-indigo-200 p-4 rounded-xl flex flex-col justify-center relative">
+
+                        <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-1">
+                            Mã Thùng 7
+                        </span>
+
+                        <div class="flex items-center justify-between gap-3">
+
+                            <p id="resMThung7"
+                                class="text-3xl font-900 text-indigo-900 tracking-wider break-all">
+                                --
+                            </p>
+
+                            <button id="copyMThung7"
+                                class="bg-indigo-100 hover:bg-indigo-200 active:scale-95 transition-all px-3 py-2 rounded-lg text-indigo-700"
+                                title="Copy mã thùng 7">
+
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- MÃ LỐC 7 -->
+                    <div id="containerMLoc7"
+                        class="bg-purple-50/50 border border-purple-200 p-4 rounded-xl flex flex-col justify-center relative">
+
+                        <span class="text-[10px] font-bold text-purple-500 uppercase tracking-wider mb-1">
+                            Mã Lốc 7
+                        </span>
+
+                        <div class="flex items-center justify-between gap-3">
+
+                            <p id="resMLoc7"
+                                class="text-3xl font-900 text-purple-900 tracking-wider break-all">
+                                --
+                            </p>
+
+                            <button id="copyMLoc7"
+                                class="bg-purple-100 hover:bg-purple-200 active:scale-95 transition-all px-3 py-2 rounded-lg text-purple-700"
+                                title="Copy mã lốc 7">
+
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <section class="w-full lg:w-7/12 flex flex-col">
-            <div id="statusBox" class="bg-white border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-16 text-center space-y-4 flex-1">
-                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
-                    <i class="fa-solid fa-hourglass-start text-2xl animate-spin" style="animation-duration: 4s;"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-slate-600">Đang chờ tín hiệu...</h3>
-                    <p class="text-slate-400 text-sm max-w-sm">Hãy bật camera hoặc sử dụng súng quét cầm tay để đối chiếu sản phẩm.</p>
-                </div>
-            </div>
+            <!-- KHUNG 3 -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
 
-            <div id="resultArea" class="hidden flex-1 flex-col gap-4 animate-in fade-in slide-in-from-bottom-3 duration-300">
-                
-                <!-- KHUNG 1 -->
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3"><i class="fa-solid fa-circle-info mr-1"></i> Khung 1: Tổng quan sản phẩm</p>
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <div class="bg-slate-50 p-2 rounded-xl border border-slate-200 flex items-center justify-center min-h-[110px] md:h-28 overflow-hidden md:col-span-3">
-                            <img id="resImage" src="" alt="Sản phẩm" class="product-img hidden">
-                            <div id="noImageFallback" class="text-slate-400 text-xs flex flex-col items-center gap-1 justify-center">
-                                <i class="fa-solid fa-image text-2xl"></i>
-                                <span>Không có ảnh</span>
-                            </div>
-                        </div>
-                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-center min-h-[110px] md:h-28 md:col-span-5">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tên sản phẩm</span>
-                            <p id="resName" class="text-sm font-800 text-slate-800 line-clamp-3 leading-snug">--</p>
-                        </div>
-                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-center min-h-[110px] md:h-28 md:col-span-2">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Quy cách</span>
-                            <p id="resSpec" class="text-base font-800 text-slate-800 truncate">--</p>
-                        </div>
-                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-center min-h-[110px] md:h-28 md:col-span-2">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Đơn vị tính</span>
-                            <p id="resUnit" class="text-base font-800 text-slate-800 truncate">--</p>
-                        </div>
-                    </div>
-                </div>
+                <p class="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                    Khung 3: Cảnh báo nghiệp vụ
+                </p>
 
-                <div id="boxFrame2" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3"><i class="fa-solid fa-link mr-1"></i> Khung 2: Mã liên kết sản phẩm</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div id="containerMThung7" class="bg-indigo-50/50 border border-indigo-200 p-4 rounded-xl flex flex-col justify-center">
-                            <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-1">Mã Thùng 7</span>
-                            <p id="resMThung7" class="text-3xl font-900 text-indigo-900 tracking-wider">--</p>
-                        </div>
-                        <div id="containerMLoc7" class="bg-purple-50/50 border border-purple-200 p-4 rounded-xl flex flex-col justify-center">
-                            <span class="text-[10px] font-bold text-purple-500 uppercase tracking-wider mb-1">Mã Lốc 7</span>
-                            <p id="resMLoc7" class="text-3xl font-900 text-purple-900 tracking-wider">--</p>
-                        </div>
-                    </div>
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="boxFrame3Grid">
 
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                    <p class="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Khung 3: Cảnh báo nghiệp vụ</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="boxFrame3Grid">
-                        <div id="boxThungWarning" class="p-4 rounded-xl flex items-center gap-3 border transition-colors"></div>
-                        <div id="boxLocWarning" class="p-4 rounded-xl flex items-center gap-3 border transition-colors"></div>
-                    </div>
-                </div>
+                    <div id="boxThungWarning"
+                        class="p-4 rounded-xl flex items-center gap-3 border transition-colors"></div>
 
-                <div class="bg-slate-900 p-4 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-base"><i class="fa-solid fa-map-pin"></i></div>
-                        <div>
-                            <span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider block">Vị trí Quầy</span>
-                            <p id="resLocation" class="text-lg font-bold">--</p>
-                        </div>
-                    </div>
-                    <button id="resetView" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 font-bold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider">
-                        <i class="fa-solid fa-redo mr-1.5"></i> Tiếp tục quét
-                    </button>
+                    <div id="boxLocWarning"
+                        class="p-4 rounded-xl flex items-center gap-3 border transition-colors"></div>
                 </div>
             </div>
-        </section>
-    </main>
 
-    <footer class="bg-white border-t border-slate-200 py-3 text-center text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-auto">
-        Co.opmart Barcode Analyzer Tool v4.4 - Hệ thống tính toán chéo nâng cao
-    </footer>
+            <!-- FOOT -->
+            <div
+                class="bg-slate-900 p-4 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
 
-    <script>
-        const GOOGLE_SCRIPT_API_URL = "https://script.google.com/macros/s/AKfycbxtpaFIaHJo-FJ4Ry02EMVoytFAXU3dL2kAg0qmb3_T2tNC6FS7JGByGXj3XCNveU3C7Q/exec"; 
+                <div class="flex items-center gap-3">
 
-        const toggleBtn = document.getElementById('toggleCamera');
-        const stopBtn = document.getElementById('stopCamera');
-        const statusBox = document.getElementById('statusBox');
-        const manualInput = document.getElementById('manualInput');
-        const resultArea = document.getElementById('resultArea');
-        const laser = document.getElementById('laser');
-        const resetViewBtn = document.getElementById('resetView');
-        let isScanning = false;
+                    <div
+                        class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-base">
 
-        // BỔ SUNG: Tính năng phát âm thanh báo hiệu
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playBeep() {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.value = 800;
-            gain.gain.value = 0.1;
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
-        }
+                        <i class="fa-solid fa-map-pin"></i>
+                    </div>
 
-        async function fetchProduct(barcode) {
-            if (!barcode) return;
-            
-            // BỔ SUNG: Hiệu ứng nhận diện
-            laser.style.background = '#22c55e'; // Chuyển sang màu xanh khi nhận diện
-            playBeep(); // Phát tiếng bíp
-            
-            statusBox.innerHTML = `<div class="flex flex-col items-center gap-4 py-10"><div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div><p class="text-blue-600 font-bold text-xs uppercase">Đang đối chiếu dữ liệu: ${barcode}</p></div>`;
-            statusBox.classList.remove('hidden');
-            resultArea.classList.add('hidden');
+                    <div>
+                        <span class="text-[9px] text-slate-400 uppercase font-bold tracking-wider block">
+                            Vị trí Quầy
+                        </span>
 
-            try {
-                const response = await fetch(`${GOOGLE_SCRIPT_API_URL}?barcode=${encodeURIComponent(barcode)}`);
-                const data = await response.json();
+                        <p id="resLocation" class="text-lg font-bold">
+                            --
+                        </p>
+                    </div>
+                </div>
 
-                if (data.success) {
-                    // (Giữ nguyên logic xử lý dữ liệu của bạn ở đây...)
-                    document.getElementById('resName').textContent = data.name || "Không tìm thấy tên";
-                    document.getElementById('resSpec').textContent = data.spec || "1";
-                    document.getElementById('resUnit').textContent = data.unit || "--";
-                    
-                    const img = document.getElementById('resImage');
-                    const fallback = document.getElementById('noImageFallback');
-                    if (data.imageUrl) { img.src = data.imageUrl; img.classList.remove('hidden'); fallback.classList.add('hidden'); } 
-                    else { img.classList.add('hidden'); fallback.classList.remove('hidden'); }
+                <button id="resetView"
+                    class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 font-bold px-6 py-2.5 rounded-xl text-xs uppercase tracking-wider">
 
-                    const txtScanned = data.scannedCode;
-                    const specValue = parseFloat(data.spec) || 1;
-                    
-                    const m13LeVal = (data.m13Le && data.m13Le !== "--") ? data.m13Le.trim() : "";
-                    const m7LeVal = (data.m7Le && data.m7Le !== "--") ? data.m7Le.trim() : "";
-                    const mLoc7Val = (data.mLoc7 && data.mLoc7 !== "--") ? data.mLoc7.trim() : "";
-                    const mThung13Val = (data.mThung13 && data.mThung13 !== "--") ? data.mThung13.trim() : "";
-                    const mThung7Val = (data.mThung7 && data.mThung7 !== "--") ? data.mThung7.trim() : "";
-                    const primaryLe7Barcode = m7LeVal || m13LeVal || "X";
-
-                    const containerMThung7 = document.getElementById('containerMThung7');
-                    const containerMLoc7 = document.getElementById('containerMLoc7');
-                    const resMThung7 = document.getElementById('resMThung7');
-                    const resMLoc7 = document.getElementById('resMLoc7');
-                    const boxFrame2 = document.getElementById('boxFrame2');
-                    const boxThung = document.getElementById('boxThungWarning');
-                    const boxLoc = document.getElementById('boxLocWarning');
-
-                    containerMThung7.classList.remove('hidden');
-                    containerMLoc7.classList.remove('hidden');
-                    boxFrame2.classList.remove('hidden');
-                    boxThung.classList.remove('hidden', 'md:col-span-2');
-                    boxLoc.classList.remove('hidden', 'md:col-span-2');
-
-                    if (txtScanned === m13LeVal || txtScanned === m7LeVal) {
-                        containerMThung7.classList.add('hidden');
-                        if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                        if (mLoc7Val === "") boxFrame2.classList.add('hidden');
-                        boxThung.classList.add('hidden');
-                        boxLoc.classList.add('md:col-span-2');
-                        if (mLoc7Val === "") {
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full md:col-span-2";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-4xl md:text-5xl text-amber-500 animate-pulse"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Tính toán mã lốc</span><span class="text-3xl md:text-5xl font-black uppercase block mt-1">Lẻ 7 (${primaryLe7Barcode}) x ${specValue}</span></div>`;
-                        } else {
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Trạng thái</span><span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">Mã lốc 7 
-							</span></div>`;
-                        }
-                    } else if (txtScanned === mThung13Val) {
-                        if (mThung7Val !== "") {
-                            resMThung7.textContent = mThung7Val;
-                            if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                            boxThung.className = "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
-                            boxThung.innerHTML = `<i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Trạng thái</span><span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">Mã thùng 7 Hợp lệ</span></div>`;
-                            boxLoc.classList.add('hidden');
-                       } else {
-
-    // Ẩn hoàn toàn hàng 2
-    boxFrame2.classList.add('hidden');
-
-    // Hiện lại cả 2 ô hàng 3
-    boxThung.classList.remove('hidden');
-    boxLoc.classList.remove('hidden');
-
-    // Ô trái: trạng thái mã thùng 
-    boxThung.className =
-        "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
-
-    boxThung.innerHTML = `
-        <i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i>
-        <div>
-            <span class="text-[10px] opacity-75 uppercase block mb-1">
-                Mã thùng 
-            </span>
-            <span class="text-2xl font-black block">
-               KHÔNG CÓ MÃ THÙNG ( Mã lẻ x quy cách)
-
-            </span>
+                    <i class="fa-solid fa-redo mr-1.5"></i>
+                    Tiếp tục quét
+                </button>
+            </div>
         </div>
-    `;
+    </section>
+</main>
 
-    // Ô phải: công thức tính
-    boxLoc.className =
-        "p-6 rounded-xl flex items-center gap-4 border-blue-200 bg-blue-50 text-blue-700 font-bold w-full";
+<footer
+    class="bg-white border-t border-slate-200 py-3 text-center text-[10px] text-slate-400 font-semibold uppercase tracking-widest mt-auto">
 
-    boxLoc.innerHTML = `
-        <i class="fa-solid fa-calculator text-3xl text-blue-500 animate-pulse"></i>
-        <div>
-            <span class="text-[10px] opacity-75 uppercase block mb-1">
-                Công thức quy đổi
-            </span>
-            <span class="text-2xl font-black block">
-                ${primaryLe7Barcode} × ${specValue}
-            </span>
-        </div>
-    `;
+    Co.opmart Barcode Analyzer Tool v4.4 - Hệ thống tính toán chéo nâng cao
+</footer>
+
+<script>
+const GOOGLE_SCRIPT_API_URL =
+"https://script.google.com/macros/s/AKfycbxtpaFIaHJo-FJ4Ry02EMVoytFAXU3dL2kAg0qmb3_T2tNC6FS7JGByGXj3XCNveU3C7Q/exec";
+
+const toggleBtn = document.getElementById('toggleCamera');
+const stopBtn = document.getElementById('stopCamera');
+const statusBox = document.getElementById('statusBox');
+const manualInput = document.getElementById('manualInput');
+const resultArea = document.getElementById('resultArea');
+const laser = document.getElementById('laser');
+const resetViewBtn = document.getElementById('resetView');
+
+let isScanning = false;
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playBeep() {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.frequency.value = 800;
+    gain.gain.value = 0.1;
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
 }
+
+async function fetchProduct(barcode) {
+
+    if (!barcode) return;
+
+    laser.style.background = '#22c55e';
+
+    playBeep();
+
+    statusBox.innerHTML = `
+        <div class="flex flex-col items-center gap-4 py-10">
+            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+
+            <p class="text-blue-600 font-bold text-xs uppercase">
+                Đang đối chiếu dữ liệu: ${barcode}
+            </p>
+        </div>
+    `;
+
+    statusBox.classList.remove('hidden');
+    resultArea.classList.add('hidden');
+
+    try {
+
+        const response = await fetch(
+            `${GOOGLE_SCRIPT_API_URL}?barcode=${encodeURIComponent(barcode)}`
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+
+            document.getElementById('resName').textContent =
+                data.name || "Không tìm thấy tên";
+
+            document.getElementById('resSpec').textContent =
+                data.spec || "1";
+
+            document.getElementById('resUnit').textContent =
+                data.unit || "--";
+
+            const img = document.getElementById('resImage');
+            const fallback = document.getElementById('noImageFallback');
+
+            if (data.imageUrl) {
+                img.src = data.imageUrl;
+                img.classList.remove('hidden');
+                fallback.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                fallback.classList.remove('hidden');
+            }
+
+            const txtScanned = data.scannedCode;
+            const specValue = parseFloat(data.spec) || 1;
+
+            const m13LeVal =
+                (data.m13Le && data.m13Le !== "--")
+                ? data.m13Le.trim()
+                : "";
+
+            const m7LeVal =
+                (data.m7Le && data.m7Le !== "--")
+                ? data.m7Le.trim()
+                : "";
+
+            const mLoc7Val =
+                (data.mLoc7 && data.mLoc7 !== "--")
+                ? data.mLoc7.trim()
+                : "";
+
+            const mThung13Val =
+                (data.mThung13 && data.mThung13 !== "--")
+                ? data.mThung13.trim()
+                : "";
+
+            const mThung7Val =
+                (data.mThung7 && data.mThung7 !== "--")
+                ? data.mThung7.trim()
+                : "";
+
+            const primaryLe7Barcode =
+                m7LeVal || m13LeVal || "X";
+
+            const containerMThung7 =
+                document.getElementById('containerMThung7');
+
+            const containerMLoc7 =
+                document.getElementById('containerMLoc7');
+
+            const resMThung7 =
+                document.getElementById('resMThung7');
+
+            const resMLoc7 =
+                document.getElementById('resMLoc7');
+
+            const boxFrame2 =
+                document.getElementById('boxFrame2');
+
+            const boxThung =
+                document.getElementById('boxThungWarning');
+
+            const boxLoc =
+                document.getElementById('boxLocWarning');
+
+            containerMThung7.classList.remove('hidden');
+            containerMLoc7.classList.remove('hidden');
+
+            boxFrame2.classList.remove('hidden');
+
+            boxThung.classList.remove('hidden', 'md:col-span-2');
+            boxLoc.classList.remove('hidden', 'md:col-span-2');
+
+            if (
+                txtScanned === m13LeVal ||
+                txtScanned === m7LeVal
+            ) {
+
+                containerMThung7.classList.add('hidden');
+
+                if (mLoc7Val !== "") {
+                    resMLoc7.textContent = mLoc7Val;
+                } else {
+                    containerMLoc7.classList.add('hidden');
+                }
+
+                if (mLoc7Val === "") {
+                    boxFrame2.classList.add('hidden');
+                }
+
+                boxThung.classList.add('hidden');
+                boxLoc.classList.add('md:col-span-2');
+
+                if (mLoc7Val === "") {
+
+                    boxLoc.className =
+                        "p-6 rounded-xl flex items-center gap-6 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full md:col-span-2";
+
+                    boxLoc.innerHTML = `
+                        <i class="fa-solid fa-calculator text-4xl md:text-5xl text-amber-500 animate-pulse"></i>
+
+                        <div>
+                            <span class="text-[11px] opacity-75 uppercase block mb-1">
+                                Tính toán mã lốc
+                            </span>
+
+                            <span class="text-3xl md:text-5xl font-black uppercase block mt-1">
+                                Không có mã lốc (Mã lẽ) x ${specValue}
+                            </span>
+                        </div>
+                    `;
+
+                } else {
+
+                    boxLoc.className =
+                        "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
+
+                    boxLoc.innerHTML = `
+                        <i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i>
+
+                        <div>
+                            <span class="text-[11px] opacity-75 uppercase block mb-1">
+                                Trạng thái
+                            </span>
+
+                            <span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">
+                                Mã lốc hợp lệ
+                            </span>
+                        </div>
+                    `;
+                }
+
+            } else if (txtScanned === mThung13Val) {
+
+                if (mThung7Val !== "") {
+
+                    resMThung7.textContent = mThung7Val;
+
+                    if (mLoc7Val !== "") {
+                        resMLoc7.textContent = mLoc7Val;
                     } else {
-                        if (mThung7Val !== "") resMThung7.textContent = mThung7Val; else containerMThung7.classList.add('hidden');
-                        if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                        if (!mThung7Val) {
-                            boxThung.className = "p-6 rounded-xl flex items-center gap-4 border-red-200 bg-red-50 text-red-700 font-bold w-full";
-                            boxThung.innerHTML = `<i class="fa-solid fa-calculator text-3xl text-red-500 animate-pulse"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Thùng 7</span><span class="text-2xl font-black block">${primaryLe7Barcode}x${specValue}</span></div>`;
-                        } else {
-                            boxThung.className = "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
-                            boxThung.innerHTML = `<i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Thùng 7</span><span class="text-2xl font-black block">Không có mã thùng</span></div>`;
-                        }
-                        if (!mLoc7Val) {
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-4 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-3xl text-amber-500 animate-pulse"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Lốc 7</span><span class="text-2xl font-black block">${primaryLe7Barcode}x${specValue}</span></div>`;
-                        } else {
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Lốc 7</span><span class="text-2xl font-black block">KHÔNG CÓ MÃ THÙNG</span></div>`;
-                        }
+                        containerMLoc7.classList.add('hidden');
                     }
 
-                    document.getElementById('resLocation').textContent = data.location || "Chưa gán quầy";
-                    statusBox.classList.add('hidden');
-                    resultArea.classList.remove('hidden');
-                    if (isScanning) stopScanning();
+                    boxThung.className =
+                        "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
+
+                    boxThung.innerHTML = `
+                        <i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i>
+
+                        <div>
+                            <span class="text-[11px] opacity-75 uppercase block mb-1">
+                                Trạng thái
+                            </span>
+
+                            <span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">
+                                Mã thùng  Hợp lệ
+                            </span>
+                        </div>
+                    `;
+
+                    boxLoc.classList.add('hidden');
+
                 } else {
-                    laser.style.background = '#ef4444'; // Trả về màu đỏ nếu lỗi
-                    statusBox.innerHTML = `<div class="flex flex-col items-center gap-4 py-10 text-rose-500"><i class="fa-solid fa-circle-xmark text-4xl"></i><div><h3 class="text-base font-bold">Không tìm thấy mã</h3><p class="text-xs opacity-75 mt-1">Hệ thống không tồn tại mã: ${barcode}</p></div><button onclick="clearAndFocus()" class="bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg text-slate-700 text-xs font-bold mt-2">Thử lại</button></div>`;
+
+                    boxFrame2.classList.add('hidden');
+
+                    boxThung.classList.remove('hidden');
+                    boxLoc.classList.remove('hidden');
+
+                    boxThung.className =
+                        "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
+
+                    boxThung.innerHTML = `
+                        <i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i>
+
+                        <div>
+                            <span class="text-[10px] opacity-75 uppercase block mb-1">
+                                Mã thùng
+                            </span>
+
+                            <span class="text-2xl font-black block">
+                                KHÔNG CÓ MÃ THÙNG ( Mã lẻ x quy cách)
+                            </span>
+                        </div>
+                    `;
+
+                    boxLoc.className =
+                        "p-6 rounded-xl flex items-center gap-4 border-blue-200 bg-blue-50 text-blue-700 font-bold w-full";
+
+                    boxLoc.innerHTML = `
+                        <i class="fa-solid fa-calculator text-3xl text-blue-500 animate-pulse"></i>
+
+                        <div>
+                            <span class="text-[10px] opacity-75 uppercase block mb-1">
+                                Công thức quy đổi
+                            </span>
+
+                            <span class="text-2xl font-black block">
+                                ${primaryLe7Barcode} × ${specValue}
+                            </span>
+                        </div>
+                    `;
                 }
-            } catch (err) {
-                statusBox.innerHTML = `<div class="p-8 text-center text-rose-600 font-bold"><i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i><p>Lỗi kết nối API Google Sheet!</p></div>`;
+
+            } else {
+
+                if (mThung7Val !== "") {
+                    resMThung7.textContent = mThung7Val;
+                } else {
+                    containerMThung7.classList.add('hidden');
+                }
+
+                if (mLoc7Val !== "") {
+                    resMLoc7.textContent = mLoc7Val;
+                } else {
+                    containerMLoc7.classList.add('hidden');
+                }
+
+                if (!mThung7Val) {
+
+                    boxThung.className =
+                        "p-6 rounded-xl flex items-center gap-4 border-red-200 bg-red-50 text-red-700 font-bold w-full";
+
+                    boxThung.innerHTML = `
+                        <i class="fa-solid fa-calculator text-3xl text-red-500 animate-pulse"></i>
+
+                        <div>
+                            <span class="text-[10px] opacity-75 uppercase block mb-1">
+                                Thùng 7
+                            </span>
+
+                            <span class="text-2xl font-black block">
+                                ${primaryLe7Barcode}x${specValue}
+                            </span>
+                        </div>
+                    `;
+
+                } else {
+
+                    boxThung.className =
+                        "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
+
+                    boxThung.innerHTML = `
+                        <i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i>
+
+                        <div>
+                            <span class="text-[10px] opacity-75 uppercase block mb-1">
+                                Thùng 7
+                            </span>
+
+                            <span class="text-2xl font-black block">
+                                Không có mã thùng
+                            </span>
+                        </div>
+                    `;
+                }
+
+                if (!mLoc7Val) {
+
+                    boxLoc.className =
+                        "p-6 rounded-xl flex items-center gap-4 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full";
+
+                    boxLoc.innerHTML = `
+                        <i class="fa-solid fa-calculator text-3xl text-amber-500 animate-pulse"></i>
+
+                        <div>
+                            <span class="text-[10px] opacity-75 uppercase block mb-1">
+                                Lốc 7
+                            </span>
+
+                            <span class="text-2xl font-black block">
+                                ${primaryLe7Barcode}x${specValue}
+                            </span>
+                        </div>
+                    `;
+
+                } else {
+
+                    boxLoc.className =
+                        "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
+
+                    boxLoc.innerHTML = `
+                        <i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i>
+
+                        <div>
+                            <span class="text-[10px] opacity-75 uppercase block mb-1">
+                                Lốc 7
+                            </span>
+
+                            <span class="text-2xl font-black block">
+                                KHÔNG CÓ MÃ THÙNG
+                            </span>
+                        </div>
+                    `;
+                }
             }
+
+            document.getElementById('resLocation').textContent =
+                data.location || "Chưa gán quầy";
+
+            statusBox.classList.add('hidden');
+            resultArea.classList.remove('hidden');
+
+            if (isScanning) stopScanning();
+
+        } else {
+
+            laser.style.background = '#ef4444';
+
+            statusBox.innerHTML = `
+                <div class="flex flex-col items-center gap-4 py-10 text-rose-500">
+
+                    <i class="fa-solid fa-circle-xmark text-4xl"></i>
+
+                    <div>
+                        <h3 class="text-base font-bold">
+                            Không tìm thấy mã
+                        </h3>
+
+                        <p class="text-xs opacity-75 mt-1">
+                            Hệ thống không tồn tại mã: ${barcode}
+                        </p>
+                    </div>
+
+                    <button onclick="clearAndFocus()"
+                        class="bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg text-slate-700 text-xs font-bold mt-2">
+
+                        Thử lại
+                    </button>
+                </div>
+            `;
         }
 
-        function startScanning() {
-            Quagga.init({
-                inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive'), constraints: { facingMode: "environment" }, },
-                decoder: { readers: ["ean_reader", "code_128_reader", "upc_reader", "ean_8_reader", "code_39_reader"] }, locate: true
-            }, function(err) {
-                if (err) return;
-                Quagga.start(); isScanning = true;
-                toggleBtn.classList.add('hidden'); stopBtn.classList.remove('hidden'); laser.style.display = 'block';
-                laser.style.background = '#ef4444'; // Reset màu laser về mặc định
-            });
-        }
+    } catch (err) {
 
-        function stopScanning() { Quagga.stop(); isScanning = false; toggleBtn.classList.remove('hidden'); stopBtn.classList.add('hidden'); laser.style.display = 'none'; }
-        Quagga.onDetected(function(result) { fetchProduct(result.codeResult.code); });
+        statusBox.innerHTML = `
+            <div class="p-8 text-center text-rose-600 font-bold">
 
-        function clearAndFocus() {
-            resultArea.classList.add('hidden'); statusBox.classList.remove('hidden');
-            statusBox.innerHTML = `<div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"><i class="fa-solid fa-hourglass-start text-2xl"></i></div><div><h3 class="text-lg font-bold text-slate-600">Đang chờ tín hiệu...</h3><p class="text-slate-400 text-sm max-w-sm">Hãy bật camera hoặc sử dụng súng quét cầm tay.</p></div>`;
-            manualInput.value = ''; manualInput.focus();
-        }
+                <i class="fa-solid fa-triangle-exclamation text-3xl mb-2"></i>
 
-        toggleBtn.addEventListener('click', startScanning);
-        stopBtn.addEventListener('click', stopScanning);
-        manualInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { fetchProduct(this.value); this.value = ''; this.blur(); } });
-        resetViewBtn.addEventListener('click', clearAndFocus);
-        window.onload = () => { manualInput.focus(); };
-    </script>
+                <p>Lỗi kết nối API Google Sheet!</p>
+            </div>
+        `;
+    }
+}
+
+function startScanning() {
+
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector('#interactive'),
+            constraints: {
+                facingMode: "environment"
+            },
+        },
+
+        decoder: {
+            readers: [
+                "ean_reader",
+                "code_128_reader",
+                "upc_reader",
+                "ean_8_reader",
+                "code_39_reader"
+            ]
+        },
+
+        locate: true
+
+    }, function(err) {
+
+        if (err) return;
+
+        Quagga.start();
+
+        isScanning = true;
+
+        toggleBtn.classList.add('hidden');
+        stopBtn.classList.remove('hidden');
+
+        laser.style.display = 'block';
+        laser.style.background = '#ef4444';
+    });
+}
+
+function stopScanning() {
+
+    Quagga.stop();
+
+    isScanning = false;
+
+    toggleBtn.classList.remove('hidden');
+    stopBtn.classList.add('hidden');
+
+    laser.style.display = 'none';
+}
+
+Quagga.onDetected(function(result) {
+    fetchProduct(result.codeResult.code);
+});
+
+function clearAndFocus() {
+
+    resultArea.classList.add('hidden');
+    statusBox.classList.remove('hidden');
+
+    statusBox.innerHTML = `
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+            <i class="fa-solid fa-hourglass-start text-2xl"></i>
+        </div>
+
+        <div>
+            <h3 class="text-lg font-bold text-slate-600">
+                Đang chờ tín hiệu...
+            </h3>
+
+            <p class="text-slate-400 text-sm max-w-sm">
+                Hãy bật camera hoặc sử dụng súng quét cầm tay.
+            </p>
+        </div>
+    `;
+
+    manualInput.value = '';
+    manualInput.focus();
+}
+
+/* COPY */
+
+function copyText(text, button) {
+
+    if (!text || text === "--") return;
+
+    navigator.clipboard.writeText(text).then(() => {
+
+        const original = button.innerHTML;
+
+        button.innerHTML = `<i class="fa-solid fa-check"></i>`;
+
+        button.classList.add(
+            'bg-emerald-100',
+            'text-emerald-700'
+        );
+
+        setTimeout(() => {
+
+            button.innerHTML = original;
+
+            button.classList.remove(
+                'bg-emerald-100',
+                'text-emerald-700'
+            );
+
+        }, 1200);
+    });
+}
+
+document.getElementById('copyMThung7')
+.addEventListener('click', () => {
+
+    copyText(
+        document.getElementById('resMThung7').textContent.trim(),
+        document.getElementById('copyMThung7')
+    );
+});
+
+document.getElementById('copyMLoc7')
+.addEventListener('click', () => {
+
+    copyText(
+        document.getElementById('resMLoc7').textContent.trim(),
+        document.getElementById('copyMLoc7')
+    );
+});
+
+/* EVENTS */
+
+toggleBtn.addEventListener('click', startScanning);
+
+stopBtn.addEventListener('click', stopScanning);
+
+manualInput.addEventListener('keypress', function(e) {
+
+    if (e.key === 'Enter') {
+
+        fetchProduct(this.value);
+
+        this.value = '';
+
+        this.blur();
+    }
+});
+
+resetViewBtn.addEventListener('click', clearAndFocus);
+
+window.onload = () => {
+    manualInput.focus();
+};
+</script>
+
 </body>
 </html>
+```
