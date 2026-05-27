@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -308,11 +309,7 @@
             <!-- KHUNG 3 -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
 
-                <p class="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3">
-                    <i class="fa-solid fa-triangle-exclamation mr-1"></i>
-                    Khung 3: Cảnh báo nghiệp vụ
-                </p>
-
+              
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="boxFrame3Grid">
 
                     <div id="boxThungWarning"
@@ -539,7 +536,7 @@ async function fetchProduct(barcode) {
                             </span>
 
                             <span class="text-3xl md:text-5xl font-black uppercase block mt-1">
-                                Không có mã lốc (Mã lẽ) x ${specValue}
+                                Không có mã lốc (Mã lẻ) x ${specValue}
                             </span>
                         </div>
                     `;
@@ -552,15 +549,7 @@ async function fetchProduct(barcode) {
                     boxLoc.innerHTML = `
                         <i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i>
 
-                        <div>
-                            <span class="text-[11px] opacity-75 uppercase block mb-1">
-                                Trạng thái
-                            </span>
-
-                            <span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">
-                                Mã lốc hợp lệ
-                            </span>
-                        </div>
+                      
                     `;
                 }
 
@@ -583,13 +572,9 @@ async function fetchProduct(barcode) {
                         <i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i>
 
                         <div>
-                            <span class="text-[11px] opacity-75 uppercase block mb-1">
-                                Trạng thái
-                            </span>
+                           
 
-                            <span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">
-                                Mã thùng  Hợp lệ
-                            </span>
+                          
                         </div>
                     `;
 
