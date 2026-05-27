@@ -279,7 +279,8 @@
                             boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-4xl md:text-5xl text-amber-500 animate-pulse"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Tính toán mã lốc</span><span class="text-3xl md:text-5xl font-black uppercase block mt-1">Lẻ 7 (${primaryLe7Barcode}) x ${specValue}</span></div>`;
                         } else {
                             boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Trạng thái</span><span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">Mã lốc 7 Hợp lệ</span></div>`;
+                            boxLoc.innerHTML = `<i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Trạng thái</span><span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">Mã lốc 7 
+							</span></div>`;
                         }
                     } else if (txtScanned === mThung13Val) {
                         if (mThung7Val !== "") {
@@ -288,14 +289,48 @@
                             boxThung.className = "p-6 rounded-xl flex items-center gap-6 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full md:col-span-2";
                             boxThung.innerHTML = `<i class="fa-solid fa-circle-check text-4xl md:text-5xl text-emerald-500"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Trạng thái</span><span class="text-3xl md:text-5xl font-black uppercase text-emerald-800 block mt-1">Mã thùng 7 Hợp lệ</span></div>`;
                             boxLoc.classList.add('hidden');
-                        } else {
-                            containerMThung7.classList.add('hidden');
-                            if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
-                            boxThung.classList.add('hidden');
-                            boxLoc.classList.add('md:col-span-2');
-                            boxLoc.className = "p-6 rounded-xl flex items-center gap-6 border-blue-200 bg-blue-50 text-blue-700 font-bold w-full md:col-span-2";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-4xl md:text-5xl text-blue-500 animate-pulse"></i><div><span class="text-[11px] opacity-75 uppercase block mb-1">Tính toán mã thùng (Lốc x Quy cách)</span><span class="text-3xl md:text-5xl font-black uppercase block mt-1">${mLoc7Val || 'X'} x ${specValue}</span></div>`;
-                        }
+                       } else {
+
+    // Ẩn hoàn toàn hàng 2
+    boxFrame2.classList.add('hidden');
+
+    // Hiện lại cả 2 ô hàng 3
+    boxThung.classList.remove('hidden');
+    boxLoc.classList.remove('hidden');
+
+    // Ô trái: trạng thái mã thùng 
+    boxThung.className =
+        "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
+
+    boxThung.innerHTML = `
+        <i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i>
+        <div>
+            <span class="text-[10px] opacity-75 uppercase block mb-1">
+                Mã thùng 
+            </span>
+            <span class="text-2xl font-black block">
+               KHÔNG CÓ MÃ THÙNG ( Mã lẻ x quy cách)
+
+            </span>
+        </div>
+    `;
+
+    // Ô phải: công thức tính
+    boxLoc.className =
+        "p-6 rounded-xl flex items-center gap-4 border-blue-200 bg-blue-50 text-blue-700 font-bold w-full";
+
+    boxLoc.innerHTML = `
+        <i class="fa-solid fa-calculator text-3xl text-blue-500 animate-pulse"></i>
+        <div>
+            <span class="text-[10px] opacity-75 uppercase block mb-1">
+                Công thức quy đổi
+            </span>
+            <span class="text-2xl font-black block">
+                ${primaryLe7Barcode} × ${specValue}
+            </span>
+        </div>
+    `;
+}
                     } else {
                         if (mThung7Val !== "") resMThung7.textContent = mThung7Val; else containerMThung7.classList.add('hidden');
                         if (mLoc7Val !== "") resMLoc7.textContent = mLoc7Val; else containerMLoc7.classList.add('hidden');
@@ -304,14 +339,14 @@
                             boxThung.innerHTML = `<i class="fa-solid fa-calculator text-3xl text-red-500 animate-pulse"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Thùng 7</span><span class="text-2xl font-black block">${primaryLe7Barcode}x${specValue}</span></div>`;
                         } else {
                             boxThung.className = "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
-                            boxThung.innerHTML = `<i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Thùng 7</span><span class="text-2xl font-black block">HỢP LỆ</span></div>`;
+                            boxThung.innerHTML = `<i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Thùng 7</span><span class="text-2xl font-black block">Không có mã thùng</span></div>`;
                         }
                         if (!mLoc7Val) {
                             boxLoc.className = "p-6 rounded-xl flex items-center gap-4 border-amber-200 bg-amber-50 text-amber-700 font-bold w-full";
                             boxLoc.innerHTML = `<i class="fa-solid fa-calculator text-3xl text-amber-500 animate-pulse"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Lốc 7</span><span class="text-2xl font-black block">${primaryLe7Barcode}x${specValue}</span></div>`;
                         } else {
                             boxLoc.className = "p-6 rounded-xl flex items-center gap-4 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold w-full";
-                            boxLoc.innerHTML = `<i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Lốc 7</span><span class="text-2xl font-black block">HỢP LỆ</span></div>`;
+                            boxLoc.innerHTML = `<i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><div><span class="text-[10px] opacity-75 uppercase block mb-1">Lốc 7</span><span class="text-2xl font-black block">KHÔNG CÓ MÃ THÙNG</span></div>`;
                         }
                     }
 
